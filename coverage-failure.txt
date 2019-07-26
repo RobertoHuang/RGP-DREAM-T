@@ -1,0 +1,13 @@
+java.lang.NullPointerException
+	at mockit.coverage.modification.ClassModification.redefineClassesAlreadyLoadedForCoverage(ClassModification.java:35)
+	at mockit.coverage.modification.ClassModification.<init>(ClassModification.java:27)
+	at mockit.coverage.CodeCoverage.<init>(CodeCoverage.java:37)
+	at mockit.coverage.CodeCoverage.create(CodeCoverage.java:71)
+	at mockit.internal.startup.Startup.activateCodeCoverageIfRequested(Startup.java:68)
+	at mockit.internal.startup.Startup.premain(Startup.java:41)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at sun.instrument.InstrumentationImpl.loadClassAndStartAgent(InstrumentationImpl.java:386)
+	at sun.instrument.InstrumentationImpl.loadClassAndCallPremain(InstrumentationImpl.java:401)

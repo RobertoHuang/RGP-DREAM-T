@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>roberto.growth.process</groupId>
+    <artifactId>dream-t</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+
+    <properties>
+        <junit.version>4.9</junit.version>
+        <jmockit.version>1.47</jmockit.version>
+        <maven-surefire-plugin.verion>2.22.2</maven-surefire-plugin.verion>
+        <maven-enforcer-plugin.version>3.0.0-M2</maven-enforcer-plugin.version>
+    </properties>
+
+    <dependencies>
+        <!-- 测试相关 STR -->
+        <!-- 先声明jmockit的依赖 -->
+        <dependency>
+            <groupId>org.jmockit</groupId>
+            <artifactId>jmockit</artifactId>
+            <version>${jmockit.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- 再声明junit的依赖 -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- 测试相关 END -->
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>${maven-enforcer-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>coverage.check</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <phase>test</phase>
+                        <configuration>
+                            <rules>
+                                <requireFilesDontExist>
+                                    <files>
+                                        <file>target/coverage.check.failed</file>
+                                    </files>
+                                </requireFilesDontExist>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven-surefire-plugin.verion}</version>
+                <configuration>
+                    <disableXmlReport>true</disableXmlReport>
+                    <argLine>-javaagent:"${settings.localRepository}/org/jmockit/jmockit/${jmockit.version}/jmockit-${jmockit.version}.jar=coverage"</argLine>
+                    <systemPropertyVariables>
+                        <coverage-output>html</coverage-output>
+                        <!-- 可选的值:all line path data none -->
+                        <coverage-metrics>all</coverage-metrics>
+                        <coverage-classes>loaded</coverage-classes>
+
+                        <coverage-srcDirs>src</coverage-srcDirs>
+                        <coverage-outputDir>${project.build.directory}/codecoverage-output</coverage-outputDir>
+                        <coverage-check>80</coverage-check>
+                        <!-- 排除单侧覆盖率需要扫描的包 -->
+                        <!--<coverage-excludes>roberto.growth.process</coverage-excludes>-->
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
