@@ -11,8 +11,8 @@
     <properties>
         <junit.version>4.9</junit.version>
         <jmockit.version>1.47</jmockit.version>
+        <jacoco-maven-plugin.version>0.8.4</jacoco-maven-plugin.version>
         <maven-surefire-plugin.verion>2.22.2</maven-surefire-plugin.verion>
-        <maven-enforcer-plugin.version>3.0.0-M2</maven-enforcer-plugin.version>
     </properties>
 
     <dependencies>
@@ -32,52 +32,120 @@
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- 单测覆盖率 -->
+        <dependency>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>${jacoco-maven-plugin.version}</version>
+        </dependency>
         <!-- 测试相关 END -->
     </dependencies>
 
     <build>
         <plugins>
             <plugin>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <version>${maven-enforcer-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>coverage.check</id>
-                        <goals>
-                            <goal>enforce</goal>
-                        </goals>
-                        <phase>test</phase>
-                        <configuration>
-                            <rules>
-                                <requireFilesDontExist>
-                                    <files>
-                                        <file>target/coverage.check.failed</file>
-                                    </files>
-                                </requireFilesDontExist>
-                            </rules>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven-surefire-plugin.verion}</version>
                 <configuration>
-                    <disableXmlReport>true</disableXmlReport>
-                    <argLine>-javaagent:"${settings.localRepository}/org/jmockit/jmockit/${jmockit.version}/jmockit-${jmockit.version}.jar=coverage"</argLine>
-                    <systemPropertyVariables>
-                        <coverage-output>html</coverage-output>
-                        <!-- 可选的值:all line path data none -->
-                        <coverage-metrics>all</coverage-metrics>
-                        <coverage-classes>loaded</coverage-classes>
+                    <skipTests>false</skipTests>
+                    <argLine>
+                        ${argLine}
+                        -javaagent:${settings.localRepository}/org/jmockit/jmockit/${jmockit.version}/jmockit-${jmockit.version}.jar
+                        -Dfile.encoding=UTF-8
+                    </argLine>
+                </configuration>
+            </plugin>
 
-                        <coverage-srcDirs>src</coverage-srcDirs>
-                        <coverage-outputDir>${project.build.directory}/codecoverage-output</coverage-outputDir>
-                        <coverage-check>80</coverage-check>
-                        <!-- 排除单侧覆盖率需要扫描的包 -->
-                        <!--<coverage-excludes>roberto.growth.process</coverage-excludes>-->
-                    </systemPropertyVariables>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+
+                    <!-- 这个check:对代码进行检测，控制项目构建成功还是失败 -->
+                    <execution>
+                        <id>check</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <!-- report的时候需要通过dataFile来指定对应的jacoco.exec的路径 -->
+                            <dataFile>${basedir}/target/coverage-reports/jacoco.exec</dataFile>
+                        </configuration>
+                    </execution>
+
+                    <!-- 这个report:对代码进行检测，然后生成index.html在target/site/index.html中可以查看检测的详细结果 -->
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <!-- report的时候需要通过dataFile来指定对应的jacoco.exec的路径 -->
+                            <dataFile>${basedir}/target/coverage-reports/jacoco.exec</dataFile>
+                            <outputDirectory>${basedir}/target/coverage-reports</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+
+                <!-- Configuration 里面写配置信息 -->
+                <configuration>
+                    <!-- 添加或排除 -->
+                    <!--<includes></includes>-->
+                    <!--<excludes></excludes>-->
+                    <skip>false</skip>
+                    <!-- configuration的destFile来自定义jacoco.exec的生成路径 -->
+                    <destFile>${basedir}/target/coverage-reports/jacoco.exec</destFile>
+                    <!-- rules里面指定覆盖规则 -->
+                    <rules>
+                        <rule implementation="org.jacoco.maven.RuleConfiguration">
+                            <element>BUNDLE</element>
+                            <limits>
+                                <!-- 指定指令覆盖到80% -->
+                                <limit implementation="org.jacoco.report.check.Limit">
+                                    <counter>INSTRUCTION</counter>
+                                    <value>COVEREDRATIO</value>
+                                    <minimum>0.8</minimum>
+                                </limit>
+
+                                <!-- 指定分支覆盖到80% -->
+                                <limit implementation="org.jacoco.report.check.Limit">
+                                    <counter>BRANCH</counter>
+                                    <value>COVEREDRATIO</value>
+                                    <minimum>0.8</minimum>
+                                </limit>
+
+                                <!-- 指定行覆盖到80% -->
+                                <limit implementation="org.jacoco.report.check.Limit">
+                                    <counter>LINE</counter>
+                                    <value>COVEREDRATIO</value>
+                                    <minimum>0.8</minimum>
+                                </limit>
+
+                                <!-- 指定方法覆盖到80% -->
+                                <limit implementation="org.jacoco.report.check.Limit">
+                                    <counter>METHOD</counter>
+                                    <value>COVEREDRATIO</value>
+                                    <minimum>0.8</minimum>
+                                </limit>
+
+                                <!-- 指定类覆盖到100%，不能遗失任何类 -->
+                                <limit implementation="org.jacoco.report.check.Limit">
+                                    <counter>CLASS</counter>
+                                    <value>MISSEDCOUNT</value>
+                                    <maximum>0</maximum>
+                                </limit>
+                            </limits>
+                        </rule>
+                    </rules>
                 </configuration>
             </plugin>
         </plugins>

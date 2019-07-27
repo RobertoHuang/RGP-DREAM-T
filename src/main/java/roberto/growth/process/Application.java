@@ -20,12 +20,12 @@ public class Application {
     private Student student;
 
     public void sayHello() {
-        System.out.println(String.format("Hello %s.", student.getName()));
+        System.out.println("Hello %s.");
     }
 
     public static class Student {
-        private String name;
-        private String password;
+        public String name;
+        public String password;
 
         public Student() {
 
